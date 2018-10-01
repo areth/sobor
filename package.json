@@ -1,0 +1,25 @@
+{
+  "name": "sobor",
+  "version": "0.0.1",
+  "description": "Server for p2p networks",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha --timeout 10000 --recursive",
+    "posttest": "npm run lint -s",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/areth/sobor.git"
+  },
+  "keywords": [
+    "p2p"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/areth/sobor/issues"
+  },
+  "homepage": "https://github.com/areth/sobor#readme"
+}
