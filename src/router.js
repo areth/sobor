@@ -133,14 +133,7 @@ class Router {
       return;
     } 
 
-    // else if (err) {
-    //   //layer.handleError(err, context, msg, this.next);
-    //   this.handleError(layer, context, msg, err);
-    // } else {
-    //   this.handleRequest(layer, context, msg);
-    // }
-
-    // we have a matched layer
+    /// we have a matched layer
     if (err && layer.handle.length !== 3) {
       // not a standard error handler
       this.next(layer.step + 1, context, msg, err);
@@ -159,35 +152,6 @@ class Router {
     }
   }
 
-  // handleError(layer, context, msg, error) {
-  //   if (layer.handle.length !== 3) {
-  //     // not a standard error handler
-  //     this.next(layer.step + 1, context, msg, error);
-  //     return;
-  //   }
-
-  //   try {
-  //     layer.handle(error, context, msg);
-  //   } catch (err) {
-  //     this.next(layer.step + 1, context, msg, err);
-  //   }
-  // }
-
-  // handleRequest(layer, context, msg, next) {
-  //   if (layer.handle.length > 2) {
-  //     // not a standard request handler
-  //     this.next(layer.step + 1, context, msg);
-  //     return;
-  //   }
-
-  //   try {
-  //     layer.handle(context, msg);
-  //     //next(context); // in case the next() wasn't called in the handler
-  //   } catch (err) {
-  //     this.next(layer.step + 1, context, msg, err);
-  //   }
-  // }
-
   handle(context, message) {
     debug('dispatching %o', message);
     this.next(0, context, message);
@@ -201,54 +165,5 @@ class Router {
     }
   }
 }
-
-// handle(stack, context, msg, error, done) {
-//   let self = this;
-
-//   debug('dispatching %s', msg);
-
-//   let idx = 0;
-
-//   next(msg, error);
-
-//   function next(msg, err) {
-//     // signal to exit router
-//     if (err === 'end') {
-//       setImmediate(done, msg, null);
-//       return;
-//     }
-
-//     // no more matching layers
-//     if (idx >= stack.length) {
-//       setImmediate(done, msg, err);
-//       return;
-//     }
-
-//     // find next matching layer
-//     let layer;
-//     let match;
-
-//     while (match !== true && idx < stack.length) {
-//       layer = stack[idx++];
-//       match = matchLayer(layer, msg);
-
-//       if (typeof match !== 'boolean') {
-//         // hold on to err
-//         err = err || match;
-//       }
-//     }
-
-//     // no match
-//     if (match !== true) {
-//       return done(msg, err);
-//     }
-
-//     if (err) {
-//       layer.handleError(err, context, msg, next);
-//     } else {
-//       layer.handleRequest(context, msg, next);
-//     }
-//   }
-// }
 
 module.exports = Router;
