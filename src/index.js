@@ -1,11 +1,4 @@
-const Sobor = require('./sobor');
-const NetworkManager = require('./networkManager');
-const simpleMiddleware = require('./simpleMiddleware');
-const simpleErrMiddleware = require('./simpleErrMiddleware');
-
-exports = module.exports = Sobor;
-
-exports.NetworkManager = NetworkManager;
-exports.simpleMiddleware = simpleMiddleware;
-exports.simpleErrMiddleware = simpleErrMiddleware;
-
+module.exports = require('./sobor');
+module.exports.NetworkManager = require('./networkManager');
+module.exports.simpleMiddleware = require('./simpleMiddleware');
+module.exports.simpleErrMiddleware = require('./simpleErrMiddleware');

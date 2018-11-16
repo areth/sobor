@@ -17,6 +17,8 @@ const initMessage = {
   date: Date.now(),
 };
 const initContext = { steps: [] };
+let message;
+let localContext;
 const middlewares = [];
 for (let i = 0; i < 100; i += 1) {
   // intentionally don't use simpleMiddleware for example
@@ -27,7 +29,7 @@ for (let i = 0; i < 100; i += 1) {
       next(context, msg);
     });
   });
-};
+}
 
 const msglessMiddleware = simpleMiddleware((context, msg, next) => {
   context.steps.push('no msg');
@@ -105,41 +107,33 @@ const patternAlt = {
   required: ['alt'],
 };
 
-const routeEnd = (context, msg, err) => {
+// const routeEnd = (context, msg, err) => {
+//   debug('%o %o %s', msg, context, err);
+// };
+
+const checkMsgTxt = txt => (context, msg, err) => {
   debug('%o %o %s', msg, context, err);
+  msg.txt.should.be.equal(`${initMessage.txt}${txt}`);
 };
 
-const checkMsgTxt = (txt) => {
-  return (context, msg, err) => {
-    debug('%o %o %s', msg, context, err);
+const checkMsgTxtSep = (txt, txtAlt) => (context, msg, err) => {
+  debug('%o %o %s', msg, context, err);
+  if (msg.alt) {
+    msg.txt.should.be.equal(`${initMessageAlt.txt}${txtAlt}`);
+  } else {
     msg.txt.should.be.equal(`${initMessage.txt}${txt}`);
-  };
+  }
 };
 
-const checkMsgTxtSep = (txt, txtAlt) => {
-  return (context, msg, err) => {
-    debug('%o %o %s', msg, context, err);
-    if(msg.alt){
-      msg.txt.should.be.equal(`${initMessageAlt.txt}${txtAlt}`);
-    } else {
-      msg.txt.should.be.equal(`${initMessage.txt}${txt}`);  
-    }
-  };
+const checkMsgUndefined = txt => (context, msg, err) => {
+  debug('%o %o %s', msg, context, err);
+  chai.should().equal(msg, undefined);
 };
 
-const checkMsgUndefined = (txt) => {
-  return (context, msg, err) => {
-    debug('%o %o %s', msg, context, err);
-    chai.should().equal(msg, undefined);
-  };
-};
-
-const checkMsgUndefinedErr = (txt) => {
-  return (context, msg, err) => {
-    debug('%o %o %s', msg, context, err);
-    chai.should().equal(msg, undefined);
-    chai.should().not.equal(err, undefined);
-  };
+const checkMsgUndefinedErr = txt => (context, msg, err) => {
+  debug('%o %o %s', msg, context, err);
+  chai.should().equal(msg, undefined);
+  chai.should().not.equal(err, undefined);
 };
 
 describe('router', () => {
@@ -159,7 +153,7 @@ describe('router', () => {
   describe('patternless route', () => {
     beforeEach(() => {
       message = clone(initMessage);
-      context = clone(initContext);
+      localContext = clone(initContext);
     });
 
     it('it should process message with 2 steps', () => {
@@ -168,16 +162,16 @@ describe('router', () => {
       router.use(middlewares[1]);
       router.end(checkMsgTxt(' -0 -1'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should process message with 1 step, 20 middlewares', () => {
       router = new Router(ajvMatcher);
       router.use(middlewares.slice(0, 20), middlewares[20]);
-      router.end(checkMsgTxt(' -0 -1 -2 -3 -4 -5 -6 -7 -8 -9 -10'+
+      router.end(checkMsgTxt(' -0 -1 -2 -3 -4 -5 -6 -7 -8 -9 -10' +
         ' -11 -12 -13 -14 -15 -16 -17 -18 -19 -20'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should break the chain in the no_next case', () => {
@@ -189,7 +183,7 @@ describe('router', () => {
       router.use(middlewares[3]);
       router.end(spy);
 
-      router.handle(context, message);
+      router.handle(localContext, message);
 
       spy.should.have.not.been.called;
     });
@@ -201,7 +195,7 @@ describe('router', () => {
       router.use(middlewares[3]);
       router.end(checkMsgUndefined);
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should break the chain on error', () => {
@@ -211,14 +205,14 @@ describe('router', () => {
       router.use(middlewares[3]);
       router.end(checkMsgTxt(' -0 -1 -err'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
   });
 
   describe('errors middlewares', () => {
     beforeEach(() => {
       message = clone(initMessage);
-      context = clone(initContext);
+      localContext = clone(initContext);
     });
 
     it('it should catch passed error once', () => {
@@ -229,7 +223,7 @@ describe('router', () => {
       router.use(errMiddlewares[0]);
       router.end(checkMsgTxt(' -0 -1 -err -err catched 0'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should catch thrown error once', () => {
@@ -240,7 +234,7 @@ describe('router', () => {
       router.use(errMiddlewares[0]);
       router.end(checkMsgTxt(' -0 -1 -err -err catched 0'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should catch error 10 times', () => {
@@ -252,10 +246,10 @@ describe('router', () => {
       router.use(middlewares.slice(4, 9)); // trying to break errors handlers chain
       router.use(errMiddlewares.slice(5));
       router.end(checkMsgTxt(' -0 -1 -err -err catched 0 -err catched 1 -err catched 2' +
-        ' -err catched 3 -err catched 4 -err catched 5 -err catched 6 -err catched 7'+
+        ' -err catched 3 -err catched 4 -err catched 5 -err catched 6 -err catched 7' +
         ' -err catched 8 -err catched 9'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should catch error without next', () => {
@@ -270,7 +264,7 @@ describe('router', () => {
       router.use(errMiddlewares[1]);
       router.end(spy);
 
-      router.handle(context, message);
+      router.handle(localContext, message);
 
       spy.should.have.not.been.called;
     });
@@ -285,7 +279,7 @@ describe('router', () => {
       router.use(errMiddlewares[1]);
       router.end(checkMsgUndefinedErr);
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should dim out the error', () => {
@@ -301,14 +295,14 @@ describe('router', () => {
       router.use(errMiddlewares[2]);
       router.end(checkMsgTxt(' -0 -1 -err -err catched 0 -err dimmed -4 -5'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
   });
 
   describe('route with patterns', () => {
     beforeEach(() => {
       message = clone(initMessage);
-      context = clone(initContext);
+      localContext = clone(initContext);
     });
 
     it('it should process message once', () => {
@@ -317,17 +311,17 @@ describe('router', () => {
       router.use(patternGood, middlewares[1]);
       router.end(checkMsgTxt(' -1'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should process message with 1 step, 20 middlewares', () => {
       router = new Router(ajvMatcher);
       router.use(patternGood, middlewares.slice(0, 20), middlewares[20]);
       router.use(patternBad, middlewares.slice(0, 20), middlewares[20]);
-      router.end(checkMsgTxt(' -0 -1 -2 -3 -4 -5 -6 -7 -8 -9 -10'+
+      router.end(checkMsgTxt(' -0 -1 -2 -3 -4 -5 -6 -7 -8 -9 -10' +
         ' -11 -12 -13 -14 -15 -16 -17 -18 -19 -20'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should break the chain in the no_message case', () => {
@@ -337,7 +331,7 @@ describe('router', () => {
       router.use(patternGood, middlewares[3]);
       router.end(checkMsgUndefined);
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should break the chain on error', () => {
@@ -347,7 +341,7 @@ describe('router', () => {
       router.use(patternGood, middlewares[3]);
       router.end(checkMsgTxt(' -0 -1 -err'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should catch error once', () => {
@@ -359,7 +353,7 @@ describe('router', () => {
       router.use(patternGood, errMiddlewares[1]);
       router.end(checkMsgTxt(' -0 -1 -err -err catched 1'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
     });
 
     it('it should process messages separatedly', () => {
@@ -376,10 +370,12 @@ describe('router', () => {
       router.use(patternBad, errMiddlewares[0]);
       router.use(patternGood, errMiddlewares[1]);
       router.use(patternAlt, errMiddlewares[2]);
-      router.end(checkMsgTxtSep(' -1 -4 -7 -err -err catched 1',
-        ' -2 -5 -8 -err -err catched 2'));
+      router.end(checkMsgTxtSep(
+        ' -1 -4 -7 -err -err catched 1',
+        ' -2 -5 -8 -err -err catched 2'
+      ));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
       router.handle(clone(initContext), clone(initMessageAlt));
     });
 
@@ -394,7 +390,7 @@ describe('router', () => {
       router.use({}, middlewares.slice(6, 9));
       router.end(checkMsgTxtSep(' -1 -4 -6 -7 -8', ' -2 -5 -6 -7 -8'));
 
-      router.handle(context, message);
+      router.handle(localContext, message);
       router.handle(clone(initContext), clone(initMessageAlt));
     });
   });

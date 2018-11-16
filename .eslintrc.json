@@ -10,6 +10,7 @@
 		"no-unused-vars": ["error", { "args": "none" }],
 		"no-unused-expressions": 0,
 		"chai-friendly/no-unused-expressions": 2,
-		"comma-dangle": ["error", "always-multiline", {"functions": "never"}]
+		"comma-dangle": ["error", "always-multiline", {"functions": "never"}],
+		"no-param-reassign": ["error", { "props": false }]
 	}
 }

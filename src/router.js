@@ -35,14 +35,14 @@ class Router {
   }
 
   doEnd(context, msg, error) {
-    if(this.endHandler) {
+    if (this.endHandler) {
       this.endHandler(context, msg, error);
     }
   }
 
   doEndAsync(context, msg, error) {
     setImmediate(this.doEnd.bind(this), context, msg, error);
-  } 
+  }
 
   use(...args) {
     let offset = 0;
@@ -81,9 +81,9 @@ class Router {
 
       // add the middleware
       debug('use %o %s', pattern, mw.name || '<anonymous>');
-      mw(handler => {
+      mw((handler) => {
         const layer = new Layer(step, this.matcher.makeSchema(pattern), handler);
-        this.stack.push(layer);  
+        this.stack.push(layer);
       }, (context, msg, err) => {
         this.next(step + 1, context, msg, err);
       });
@@ -104,13 +104,13 @@ class Router {
       this.doEndAsync(context, msg, err);
       return;
     }
-    
+
     // no more matching layers
     if (nextStep >= this.stack.length) {
       this.doEndAsync(context, msg, err);
       return;
     }
-    
+
     // find next matching layer
     let layer;
     let match;
@@ -126,14 +126,14 @@ class Router {
 
       idx += 1;
     }
-    
+
     // no match
     if (match !== true) {
       this.doEnd(context, msg, err);
       return;
-    } 
+    }
 
-    /// we have a matched layer
+    // / we have a matched layer
     if (err && layer.handle.length !== 3) {
       // not a standard error handler
       this.next(layer.step + 1, context, msg, err);

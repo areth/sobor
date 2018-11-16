@@ -57,9 +57,9 @@ class Sobor extends EventEmitter {
 
   handleOut(context, message) {
     this.routerOut.handle(context, message);
-      // .then(Router.doIfMessage(msg => this.networkManager.out(context, msg)))
-      // .then(Router.doIfMessage(msg => this.sendDirect(context.peer, msg)))
-      // .catch(err => debug('out stack error %s', err));
+    // .then(Router.doIfMessage(msg => this.networkManager.out(context, msg)))
+    // .then(Router.doIfMessage(msg => this.sendDirect(context.peer, msg)))
+    // .catch(err => debug('out stack error %s', err));
   }
 
   endOut(context, message, error) {

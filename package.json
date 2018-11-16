@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --timeout 10000 --recursive",
     "test:debug": "DEBUG=*:test:* mocha --timeout 10000 --recursive",
-    "test:android": "mobile-test --arch android --recursive",
+    "test:android": "mocha-mobile -a android --recursive",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

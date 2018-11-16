@@ -1,7 +1,5 @@
-module.exports = (fn) => {
-  return (handle, next) => {
-    handle((context, msg, err) => {
-      fn(context, msg, err, next);
-    });
-  };
+module.exports = fn => (handle, next) => {
+  handle((context, msg, err) => {
+    fn(context, msg, err, next);
+  });
 };
